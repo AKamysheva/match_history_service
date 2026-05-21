@@ -1,0 +1,12 @@
+.vscode
+__pycache__
+.env
+.history
+backend_test.md
+
+*.pyc
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache
+__pypackages__/

@@ -1,0 +1,30 @@
+services:
+  db:
+    image: postgres:17
+    container_name: db_game_matches_history
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    env_file:
+      - ./app/.env
+
+  game_matches_history:
+    build: .
+    container_name: web_game_matches_history
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+    env_file:
+      - ./app/.env
+    command: >
+      bash -c "
+      poetry run alembic upgrade head &&
+      poetry run uvicorn app.main:app --host 0.0.0.0 --port 8500
+      "
+    ports:
+      - "8500:8500"
+
+volumes:
+  postgres_data:

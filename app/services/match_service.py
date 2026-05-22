@@ -33,8 +33,6 @@ class MatchService:
                 continue
 
             info = data["info"]
-            if info["queueId"] != 420:
-                continue
 
             match = GameMatch(
                 match_id=match_id,

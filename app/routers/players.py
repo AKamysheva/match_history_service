@@ -36,7 +36,7 @@ async def create_player(
     except PlayerNotFoundError:
         raise HTTPException(status_code=404, detail="Player not found")
 
-    return player
+    return PlayerOut.model_validate(player)
 
 
 @router.get("/{puuid}", response_model=PlayerOut)
@@ -48,7 +48,7 @@ async def get_player_from_db(
     if not player:
         raise HTTPException(status_code=404, detail="Player not found")
 
-    return player
+    return PlayerOut.model_validate(player)
 
 
 @router.get("/{puuid}/champions", response_model=ChampionStatsResponse)
@@ -80,7 +80,7 @@ async def get_matches_participants(
         raise HTTPException(status_code=404, detail="Player not found")
 
     matches = await match_participant_repo.get_matches_by_player_id(player.id, limit)
-    return matches
+    return [MatchParticipantOut.model_validate(m) for m in matches]
 
 
 @router.get("/{puuid}/matches", response_model=List[GameMatchOut])
@@ -97,4 +97,4 @@ async def get_game_matches(
     matches = await match_repo.get_matches_by_player_puuid(puuid, limit)
     if not matches:
         raise HTTPException(status_code=404, detail="Matches not found")
-    return matches
+    return [GameMatchOut.model_validate(m) for m in matches]

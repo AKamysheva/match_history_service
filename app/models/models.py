@@ -29,8 +29,7 @@ class Player(Base):
     )  # summoner = player`s account LoL
 
     ranked_entries: Mapped[list["RankedEntry"]] = relationship(
-        back_populates="player",
-        cascade="all, delete-orphan",
+        back_populates="player", cascade="all, delete-orphan", lazy="selectin"
     )
     participants: Mapped[list["MatchParticipant"]] = relationship(
         back_populates="player",

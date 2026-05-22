@@ -18,6 +18,6 @@ app.include_router(admin_router)
 app.include_router(player_router)
 
 
-@app.get("/")
-async def root():
+@app.get("/healthz")
+async def healthz():
     return {"status": "ok"}

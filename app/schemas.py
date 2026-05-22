@@ -2,13 +2,15 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict
 
 
-class RankedOut(BaseModel):
+class RankedEntryOut(BaseModel):
     queue_type: str
     tier: str
     rank: str
     league_points: int
     wins: int
     losses: int
+
+    model_config = ConfigDict(extra="ignore", from_attributes=True)
 
 
 class PlayerOut(BaseModel):
@@ -17,7 +19,7 @@ class PlayerOut(BaseModel):
     game_name: str
     tag_line: str
 
-    ranked: list[RankedOut] = []
+    ranked_entries: list[RankedEntryOut] = []
 
     model_config = ConfigDict(extra="ignore", from_attributes=True)
 

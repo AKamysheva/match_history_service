@@ -26,7 +26,7 @@ class PlayerRepository:
 
     async def create_or_update_player(
         self, account_data: dict, summonner_data: dict
-    ) -> None:
+    ) -> Player:
         player = await self.get_by_puuid(account_data["puuid"])
 
         if player:
@@ -43,6 +43,7 @@ class PlayerRepository:
             )
             self.db.add(player)
 
-        await self.db.commit()
+        await self.db.flush()
+        await self.db.refresh(player)
 
         return player

@@ -1,4 +1,4 @@
-from sqlalchemy import func, select
+from sqlalchemy import func, Integer, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.models import MatchParticipant
 
@@ -17,7 +17,7 @@ class ChampionStatsService:
                 MatchParticipant.champion_name,
                 func.count().label("games"),
                 func.avg(MatchParticipant.kda).label("avg_kda"),
-                func.avg(MatchParticipant.win.cast(int)).label("winrate"),
+                func.avg(MatchParticipant.win.cast(Integer)).label("winrate"),
             )
             .where(MatchParticipant.player_id == player_id)
             .group_by(MatchParticipant.champion_name)

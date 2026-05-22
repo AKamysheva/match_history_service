@@ -1,13 +1,11 @@
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
-from app.infrastructure.db.database import get_db
 from app.infrastructure.repositories.match_participant_repo import (
     MatchParticipantRepository,
 )
 from app.infrastructure.repositories.player_repo import PlayerRepository
 from app.infrastructure.repositories.match_repo import GameMatchRepository
-from app.services.client import RiotClient
+from app.services.player_service import PlayerService
 from app.services.champion_stats import ChampionStatsService
 from app.schemas import (
     ChampionStatsResponse,
@@ -16,33 +14,39 @@ from app.schemas import (
     GameMatchOut,
 )
 from app.dependencies import (
-    get_riot_client,
     get_player_repo,
     get_match_participant_repo,
     get_match_repo,
+    get_player_service,
+    get_champion_stats_service,
 )
+from app.exceptions import PlayerNotFoundError
 
 router = APIRouter(prefix="/players", tags=["players"])
 
 
-@router.get("/{game_name}/{tag_line}", response_model=PlayerOut)
-async def get_player(
+@router.post("/{game_name}/{tag_line}", response_model=PlayerOut)
+async def create_player(
     game_name: str,
     tag_line: str,
-    riot_client: RiotClient = Depends(get_riot_client),
-    db: AsyncSession = Depends(get_db),
-    player_repo: PlayerRepository = Depends(get_player_repo),
+    player_service: PlayerService = Depends(get_player_service),
 ):
-    account_data = await riot_client.get_account_by_riot_id(game_name, tag_line)
-
-    if not account_data:
+    try:
+        player = await player_service.create_player(game_name, tag_line)
+    except PlayerNotFoundError:
         raise HTTPException(status_code=404, detail="Player not found")
 
-    summoner_data = await riot_client.get_summoner_by_puuid(account_data["puuid"])
+    return player
 
-    await player_repo.create_or_update_player(account_data, summoner_data)
 
-    player = await player_repo.get_by_puuid_with_ranked(account_data["puuid"])
+@router.get("/{puuid}", response_model=PlayerOut)
+async def get_player_from_db(
+    puuid: str,
+    player_repo: PlayerRepository = Depends(get_player_repo),
+):
+    player = await player_repo.get_by_puuid_with_ranked(puuid)
+    if not player:
+        raise HTTPException(status_code=404, detail="Player not found")
 
     return player
 
@@ -50,22 +54,19 @@ async def get_player(
 @router.get("/{puuid}/champions", response_model=ChampionStatsResponse)
 async def get_champion_stats(
     puuid: str,
-    db: AsyncSession = Depends(get_db),
+    champion_stats_service: ChampionStatsService = Depends(get_champion_stats_service),
     player_repo: PlayerRepository = Depends(get_player_repo),
 ):
     player = await player_repo.get_by_puuid(puuid)
     if not player:
         raise HTTPException(status_code=404, detail="Player not found")
 
-    service = ChampionStatsService(db)
-    stats = await service.champion_stats(player.id)
+    stats = await champion_stats_service.champion_stats(player.id)
 
     return ChampionStatsResponse(player_id=player.id, champions=stats)
 
 
-@router.get(
-    "/players/{puuid}/matches_participants", response_model=List[MatchParticipantOut]
-)
+@router.get("/{puuid}/matches_participants", response_model=List[MatchParticipantOut])
 async def get_matches_participants(
     puuid: str,
     limit: int = 20,
@@ -82,7 +83,7 @@ async def get_matches_participants(
     return matches
 
 
-@router.get("/players/{puuid}/matches", response_model=List[GameMatchOut])
+@router.get("/{puuid}/matches", response_model=List[GameMatchOut])
 async def get_game_matches(
     puuid: str,
     limit: int = 20,

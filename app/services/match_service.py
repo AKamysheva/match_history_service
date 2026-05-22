@@ -16,17 +16,13 @@ class MatchService:
     async def update_player_matches(self, player: Player):
         match_ids = await self.riot_client.get_match_ids(player.puuid)
 
-        for match_id in match_ids:
+        existing_matches = await self.db.execute(
+            select(GameMatch.match_id).where(GameMatch.match_id.in_(match_ids))
+        )
+        existing_ids = set(existing_matches.scalars().all())
+        new_match_ids = [m for m in match_ids if m not in existing_ids]
 
-            existing = await self.db.execute(
-                select(GameMatch).where(GameMatch.match_id == match_id)
-            )
-
-            existing_match = existing.scalar_one_or_none()
-
-            if existing_match:
-                continue
-
+        for match_id in new_match_ids:
             data = await self.riot_client.get_match(match_id)
 
             if not data:

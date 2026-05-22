@@ -20,9 +20,7 @@ class Player(Base):
     __tablename__ = "players"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    puuid: Mapped[str] = mapped_column(
-        String(78), unique=True, index=True, nullable=False
-    )
+    puuid: Mapped[str] = mapped_column(String(78), unique=True, index=True)
     game_name: Mapped[str] = mapped_column(String, nullable=False)
     tag_line: Mapped[str] = mapped_column(String, nullable=False)
     region: Mapped[str] = mapped_column(String(10))
@@ -55,6 +53,10 @@ class RankedEntry(Base):
     losses: Mapped[int] = mapped_column(Integer)
 
     player: Mapped["Player"] = relationship(back_populates="ranked_entries")
+
+    __table_args__ = (
+        UniqueConstraint("player_id", "queue_type", name="uq_player_queue"),
+    )
 
 
 class GameMatch(Base):
@@ -114,6 +116,3 @@ class MatchParticipant(Base):
             name="uq_match_player",
         ),
     )
-
-
-# Player (profile) ranked-записи и историю последних матчей с деталями.

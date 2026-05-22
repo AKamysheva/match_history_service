@@ -33,6 +33,8 @@ class MatchService:
                 continue
 
             info = data["info"]
+            if info["queueId"] != 420:
+                continue
 
             match = GameMatch(
                 match_id=match_id,
@@ -72,7 +74,7 @@ class MatchService:
                     gold_earned=p["goldEarned"],
                     gold_spent=p["goldSpent"],
                     win=p["win"],
-                    kda=(p["kills"] + p["assists"]) / deaths,
+                    kda=round((p["kills"] + p["assists"]) / deaths, 2),
                     raw_json=p,
                 )
 

@@ -1,4 +1,4 @@
-from sqlalchemy import delete
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.models import Player, RankedEntry
@@ -13,25 +13,31 @@ class RankedEntriesService:
 
     async def update_ranked_entries(self, player: Player) -> None:
         data = await self.riot_client.get_ranked_entries(player.puuid)
-        await self.db.execute(
-            delete(RankedEntry).where(RankedEntry.player_id == player.id)
-        )
 
         if not data:
-            await self.db.commit()
             return
 
         for entry in data:
-            self.db.add(
-                RankedEntry(
-                    player_id=player.id,
-                    queue_type=entry["queueType"],
-                    tier=Tier(entry["tier"]),
-                    rank=entry["rank"],
-                    league_points=entry["leaguePoints"],
-                    wins=entry["wins"],
-                    losses=entry["losses"],
-                )
+            insert_stmt = insert(RankedEntry).values(
+                player_id=player.id,
+                queue_type=entry["queueType"],
+                tier=Tier(entry["tier"]),
+                rank=entry["rank"],
+                league_points=entry["leaguePoints"],
+                wins=entry["wins"],
+                losses=entry["losses"],
             )
+
+            do_update_stmt = insert_stmt.on_conflict_do_update(
+                index_elements=["player_id", "queue_type"],
+                set_={
+                    "tier": Tier(entry["tier"]),
+                    "rank": entry["rank"],
+                    "league_points": entry["leaguePoints"],
+                    "wins": entry["wins"],
+                    "losses": entry["losses"],
+                },
+            )
+            await self.db.execute(do_update_stmt)
 
         await self.db.commit()

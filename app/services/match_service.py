@@ -8,12 +8,13 @@ from app.services.client import RiotClient
 
 
 class MatchService:
+    """Сервис загрузки матчей игрока."""
 
     def __init__(self, db: AsyncSession, riot_client: RiotClient) -> None:
         self.db = db
         self.riot_client = riot_client
 
-    async def update_player_matches(self, player: Player):
+    async def update_player_matches(self, player: Player) -> None:
         match_ids = await self.riot_client.get_match_ids(player.puuid)
 
         existing_matches = await self.db.execute(

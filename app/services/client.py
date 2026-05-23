@@ -6,12 +6,14 @@ from app.exceptions import RiotAPIError
 
 
 class RiotClient:
+    """клиент для взаимодействия с Riot API."""
+
     def __init__(self) -> None:
         self.client = httpx.AsyncClient(timeout=httpx.Timeout(15))
         self.headers = {"X-Riot-Token": settings.API_RIOT_KEY}
         self.semaphore = asyncio.Semaphore(10)
 
-    async def close(self):
+    async def close(self) -> None:
         await self.client.aclose()
 
     async def _request(self, url: str, retries: int = 3):

@@ -7,6 +7,8 @@ from app.services.client import RiotClient
 
 
 class RankedEntriesService:
+    """Сервис загрузки ranked entries игрока."""
+
     def __init__(self, db: AsyncSession, riot_client: RiotClient) -> None:
         self.db = db
         self.riot_client = riot_client

@@ -13,11 +13,19 @@ class RankedEntryOut(BaseModel):
     model_config = ConfigDict(extra="ignore", from_attributes=True)
 
 
+class ProfileJsonOut(BaseModel):
+    profileIconId: int
+    summonerLevel: int
+
+    model_config = ConfigDict(extra="ignore", from_attributes=True)
+
+
 class PlayerOut(BaseModel):
     id: int
     puuid: str
     game_name: str
     tag_line: str
+    profile_json: ProfileJsonOut | None
 
     ranked_entries: list[RankedEntryOut] = []
 

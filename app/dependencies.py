@@ -6,8 +6,6 @@ from app.infrastructure.repositories.match_participant_repo import (
     MatchParticipantRepository,
 )
 from app.infrastructure.repositories.match_repo import GameMatchRepository
-from app.services.match_service import MatchService
-from app.services.ranked_service import RankedEntriesService
 from app.services.client import RiotClient
 from app.services.player_service import PlayerService
 from app.services.champion_stats import ChampionStatsService
@@ -41,22 +39,6 @@ def get_player_service(
 ) -> PlayerService:
     player_service = PlayerService(db, riot_client, player_repo)
     return player_service
-
-
-def get_match_service(
-    db: AsyncSession = Depends(get_db),
-    riot_client: RiotClient = Depends(get_riot_client),
-) -> MatchService:
-    match_service = MatchService(db, riot_client)
-    return match_service
-
-
-def get_ranked_entries_service(
-    db: AsyncSession = Depends(get_db),
-    riot_client: RiotClient = Depends(get_riot_client),
-) -> RankedEntriesService:
-    ranked_service = RankedEntriesService(db, riot_client)
-    return ranked_service
 
 
 def get_champion_stats_service(

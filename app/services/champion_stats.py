@@ -5,6 +5,11 @@ from app.models.models import MatchParticipant
 
 
 class ChampionStatsService:
+    """
+    Сервис агрегированной статистики по чемпионам.
+    Статистика считается только для SoloQ (queue_id = 420).
+    """
+
     def __init__(self, db: AsyncSession) -> None:
         self.db = db
 
@@ -38,7 +43,7 @@ class ChampionStatsService:
             {
                 "champion_name": row.champion_name,
                 "games": row.games,
-                "avg_kda": float(row.avg_kda or 0),
+                "avg_kda": round(float(row.avg_kda or 0), 2),
                 "winrate": float(row.winrate or 0),
             }
             for row in result.all()

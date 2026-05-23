@@ -30,7 +30,8 @@ async def create_player(
     game_name: str,
     tag_line: str,
     player_service: PlayerService = Depends(get_player_service),
-):
+) -> PlayerOut:
+    """ "Создает игрока по Riot ID."""
     try:
         player = await player_service.create_player(game_name, tag_line)
     except PlayerNotFoundError:
@@ -43,7 +44,8 @@ async def create_player(
 async def get_player_from_db(
     puuid: str,
     player_repo: PlayerRepository = Depends(get_player_repo),
-):
+) -> PlayerOut:
+    """Возвращает профиль игрока из локальной базы данных."""
     player = await player_repo.get_by_puuid_with_ranked(puuid)
     if not player:
         raise HTTPException(status_code=404, detail="Player not found")
@@ -56,7 +58,11 @@ async def get_champion_stats(
     puuid: str,
     champion_stats_service: ChampionStatsService = Depends(get_champion_stats_service),
     player_repo: PlayerRepository = Depends(get_player_repo),
-):
+) -> ChampionStatsResponse:
+    """
+    Возвращает агрегированную статистику игрока по чемпионам.
+    Учитываются только SoloQ матчи (queue_id=420).
+    """
     player = await player_repo.get_by_puuid(puuid)
     if not player:
         raise HTTPException(status_code=404, detail="Player not found")
@@ -75,6 +81,8 @@ async def get_matches_participants(
         get_match_participant_repo
     ),
 ):
+    """Возвращает статистику игрока по матчам."""
+    limit = min(limit, 100)
     player = await player_repo.get_by_puuid(puuid)
     if not player:
         raise HTTPException(status_code=404, detail="Player not found")
@@ -90,6 +98,8 @@ async def get_game_matches(
     player_repo: PlayerRepository = Depends(get_player_repo),
     match_repo: GameMatchRepository = Depends(get_match_repo),
 ):
+    """Возвращает последние матчи игрока."""
+    limit = min(limit, 100)
     player = await player_repo.get_by_puuid(puuid)
     if not player:
         raise HTTPException(status_code=404, detail="Player not found")

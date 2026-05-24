@@ -7,12 +7,12 @@ class MatchParticipantRepository:
     def __init__(self, db: AsyncSession) -> None:
         self.db = db
 
-    async def get_matches_by_player_id(
-        self, player_id: int, limit: int = 20
+    async def get_matches_by_puuid(
+        self, puuid: str, limit: int = 20
     ) -> list[MatchParticipant]:
         stmt = (
             select(MatchParticipant)
-            .where(MatchParticipant.player_id == player_id)
+            .where(MatchParticipant.puuid == puuid)
             .order_by(MatchParticipant.match_pk_id.desc())
             .limit(limit)
         )

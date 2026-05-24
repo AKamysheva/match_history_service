@@ -31,9 +31,7 @@ class Player(Base):
     ranked_entries: Mapped[list["RankedEntry"]] = relationship(
         back_populates="player", cascade="all, delete-orphan", lazy="selectin"
     )
-    participants: Mapped[list["MatchParticipant"]] = relationship(
-        back_populates="player",
-    )
+
     __table_args__ = (Index("ix_players_game_name_tag", "game_name", "tag_line"),)
 
 
@@ -71,8 +69,7 @@ class GameMatch(Base):
     raw_json: Mapped[dict] = mapped_column(JSON)
 
     participants: Mapped[list["MatchParticipant"]] = relationship(
-        back_populates="match",
-        cascade="all, delete-orphan",
+        back_populates="match", cascade="all, delete-orphan", lazy="selectin"
     )
 
 
@@ -83,7 +80,6 @@ class MatchParticipant(Base):
     match_pk_id: Mapped[int] = mapped_column(
         ForeignKey("game_matches.id", ondelete="CASCADE"), nullable=True
     )
-    player_id: Mapped[int] = mapped_column(ForeignKey("players.id", ondelete="CASCADE"))
     puuid: Mapped[str] = mapped_column(String(78), index=True)
     champion_id: Mapped[int] = mapped_column(Integer)
     champion_name: Mapped[str] = mapped_column(String)
@@ -103,8 +99,6 @@ class MatchParticipant(Base):
     kda: Mapped[float] = mapped_column(Float)  # эффективность игрока в матче
 
     raw_json: Mapped[dict] = mapped_column(JSON)
-
-    player: Mapped["Player"] = relationship(back_populates="participants")
 
     match: Mapped["GameMatch"] = relationship(back_populates="participants")
 

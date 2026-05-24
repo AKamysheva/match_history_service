@@ -16,7 +16,7 @@ class GameMatchRepository:
         stmt = (
             select(GameMatch)
             .join(MatchParticipant, MatchParticipant.match_pk_id == GameMatch.id)
-            .join(Player, Player.id == MatchParticipant.player_id)
+            .join(Player, Player.puuid == MatchParticipant.puuid)
             .where(Player.puuid == puuid)
             .options(selectinload(GameMatch.participants))
             .order_by(GameMatch.start_time.desc())

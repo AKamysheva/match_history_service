@@ -67,7 +67,7 @@ async def get_champion_stats(
     if not player:
         raise HTTPException(status_code=404, detail="Player not found")
 
-    stats = await champion_stats_service.champion_stats(player.id)
+    stats = await champion_stats_service.champion_stats(player.puuid)
 
     return ChampionStatsResponse(player_id=player.id, champions=stats)
 
@@ -87,7 +87,7 @@ async def get_matches_participants(
     if not player:
         raise HTTPException(status_code=404, detail="Player not found")
 
-    matches = await match_participant_repo.get_matches_by_player_id(player.id, limit)
+    matches = await match_participant_repo.get_matches_by_puuid(player.puuid, limit)
     return [MatchParticipantOut.model_validate(m) for m in matches]
 
 

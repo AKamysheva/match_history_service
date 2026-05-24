@@ -13,11 +13,7 @@ class ChampionStatsService:
     def __init__(self, db: AsyncSession) -> None:
         self.db = db
 
-    async def champion_stats(
-        self,
-        player_id: int,
-    ):
-
+    async def champion_stats(self, puuid: str):
         stmt = (
             select(
                 MatchParticipant.champion_name,
@@ -30,7 +26,7 @@ class ChampionStatsService:
                 GameMatch.id == MatchParticipant.match_pk_id,
             )
             .where(
-                MatchParticipant.player_id == player_id,
+                MatchParticipant.puuid == puuid,
                 GameMatch.queue_id == 420,
             )
             .group_by(MatchParticipant.champion_name)

@@ -25,4 +25,4 @@ async def update_player_data_task(puuid: str) -> None:
         )
 
         await ranked_service.update_ranked_entries(player)
-        await match_service.update_player_matches(player)
+        await match_service.update_player_matches(puuid)
